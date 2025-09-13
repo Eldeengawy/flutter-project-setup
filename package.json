@@ -2,7 +2,7 @@
   "name": "flutter-project-setup",
   "displayName": "Flutter Project Setup",
   "description": "Automates Flutter project setup with predefined tasks and essential packages",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "publisher": "DevUnity",
   "engines": {
     "vscode": "^1.90.0"
@@ -27,6 +27,7 @@
   },
   "activationEvents": [],
   "main": "./dist/extension.js",
+  "icon": "icon.png",
   "contributes": {
     "commands": [
       {
