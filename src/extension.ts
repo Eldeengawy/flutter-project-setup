@@ -1,9 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { createFeatureStructure } from './feature-creator';
 
 export function activate(context: vscode.ExtensionContext) {
-  let disposable = vscode.commands.registerCommand('flutter-project-setup.setupProject', async () => {
+  // Original setup project command
+  let setupDisposable = vscode.commands.registerCommand('flutter-project-setup.setupProject', async () => {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders) {
       vscode.window.showErrorMessage('No workspace open. Open a Flutter project folder first.');
@@ -18,7 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
       fs.mkdirSync(vscodeDir, { recursive: true });
     }
 
-    // Your tasks JSON
+    // Your tasks JSON (keeping original)
     const tasksJson = {
       "version": "2.0.0",
       "tasks": [
@@ -114,14 +116,86 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  context.subscriptions.push(disposable);
+  // New create feature command
+  let createFeatureDisposable = vscode.commands.registerCommand('flutter-project-setup.createFeature', async () => {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders) {
+      vscode.window.showErrorMessage('No workspace open. Open a Flutter project folder first.');
+      return;
+    }
 
-  const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-  statusBarItem.command = 'flutter-project-setup.setupProject';
-  statusBarItem.text = '$(tools) Setup Flutter Project';
-  statusBarItem.tooltip = 'Run complete Flutter project setup';
-  statusBarItem.show();
-  context.subscriptions.push(statusBarItem);
+    const workspacePath = workspaceFolders[0].uri.fsPath;
+    const libPath = path.join(workspacePath, 'lib');
+    const featuresPath = path.join(libPath, 'features');
+
+    // Check if lib/features exists
+    if (!fs.existsSync(featuresPath)) {
+      vscode.window.showErrorMessage('No features folder found. Make sure you have run the project setup first.');
+      return;
+    }
+
+    // Prompt for feature name
+    const featureName = await vscode.window.showInputBox({
+      prompt: 'Enter the feature name (e.g., "User Profile", "On Boarding", "Shopping Cart")',
+      placeHolder: 'Feature Name',
+      validateInput: (input) => {
+        if (!input || input.trim().length === 0) {
+          return 'Feature name cannot be empty';
+        }
+        if (input.length > 50) {
+          return 'Feature name is too long';
+        }
+        return null;
+      }
+    });
+
+    if (!featureName) {
+      return;
+    }
+
+    try {
+      await createFeatureStructure(featuresPath, workspacePath, featureName);
+      vscode.window.showInformationMessage(`✅ Feature "${featureName}" created successfully!`);
+
+      // Show feature in explorer
+      const featureFolderPath = path.join(featuresPath, convertToSnakeCase(featureName));
+      const featureFolderUri = vscode.Uri.file(featureFolderPath);
+      await vscode.commands.executeCommand('revealInExplorer', featureFolderUri);
+
+    } catch (error) {
+      vscode.window.showErrorMessage(`Failed to create feature: ${(error as Error).message}`);
+    }
+  });
+
+  context.subscriptions.push(setupDisposable);
+  context.subscriptions.push(createFeatureDisposable);
+
+  // Enhanced status bar with both commands
+  const setupStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+  setupStatusBarItem.command = 'flutter-project-setup.setupProject';
+  setupStatusBarItem.text = '$(tools) Setup Flutter Project';
+  setupStatusBarItem.tooltip = 'Run complete Flutter project setup';
+  setupStatusBarItem.show();
+
+  const createFeatureStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 99);
+  createFeatureStatusBarItem.command = 'flutter-project-setup.createFeature';
+  createFeatureStatusBarItem.text = '$(add) Create Feature';
+  createFeatureStatusBarItem.tooltip = 'Create new Flutter feature';
+  createFeatureStatusBarItem.show();
+
+  context.subscriptions.push(setupStatusBarItem);
+  context.subscriptions.push(createFeatureStatusBarItem);
+}
+
+// Helper function to convert input to snake_case
+function convertToSnakeCase(input: string): string {
+  return input
+    .trim()
+    .toLowerCase()
+    .replace(/[\s\-]+/g, '_')    // Replace spaces and hyphens with underscores
+    .replace(/[^\w_]/g, '')      // Remove special characters except underscores
+    .replace(/_+/g, '_')         // Replace multiple underscores with single underscore
+    .replace(/^_|_$/g, '');      // Remove leading and trailing underscores
 }
 
 export function deactivate() {}
