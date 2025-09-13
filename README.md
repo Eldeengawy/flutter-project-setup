@@ -1,71 +1,66 @@
-# flutter-project-setup README
+# Flutter Project Setup Extension
 
-This is the README for your extension "flutter-project-setup". After writing up a brief description, we recommend including the following sections.
+Automates Flutter project setup with predefined tasks and configurations.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- **Complete Project Setup**: Replaces lib folder with a pre-configured template from GitHub
+- **Automatic Package Installation**: Installs essential Flutter packages automatically
+- **Smart Name Replacement**: Auto-detects project name and replaces placeholders throughout the codebase
+- **VS Code Integration**: Adds tasks.json with useful Flutter development tasks
+- **Cross-Platform Support**: Works on macOS, Linux, and Windows
 
-For example if there is an image subfolder under your extension project workspace:
+## Usage
 
-\!\[feature X\]\(images/feature-x.png\)
+1. Open a Flutter project in VS Code
+2. Use Command Palette (`Cmd+Shift+P` or `Ctrl+Shift+P`)
+3. Type "Setup Flutter Project" and press Enter
+4. Or click the "🔧 Setup Flutter Project" button in the status bar
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+The extension will:
+- Replace your `lib` folder with a template from [setup_project repository](https://github.com/Eldeengawy/setup_project.git)
+- Install essential Flutter packages (flutter_bloc, dio, go_router, etc.)
+- Replace placeholder names with your actual project name
+- Set up VS Code tasks for future development
+
+## Installed Packages
+
+- `flutter_bloc` - State management
+- `dartz` - Functional programming utilities
+- `dio` - HTTP client
+- `go_router` - Navigation
+- `shared_preferences` - Local storage
+- `flutter_screenutil` - Screen adaptation
+- `cached_network_image` - Image caching
+- And many more useful packages...
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- Flutter SDK
+- Git
+- An open Flutter project workspace
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+This extension contributes the following commands:
 
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+- `flutter-project-setup.setupProject`: Setup Flutter Project
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+- Requires active internet connection for cloning template repository
+- May overwrite existing lib folder content
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.0.1
 
-### 1.0.0
+Initial release with basic project setup functionality.
 
-Initial release of ...
+## Contributing
 
-### 1.0.1
+Issues and feature requests are welcome!
 
-Fixed issue #.
+## License
 
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+MIT
