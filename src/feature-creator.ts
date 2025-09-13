@@ -20,10 +20,10 @@ function convertToSnakeCase(input: string): string {
   return input
     .trim()
     .toLowerCase()
-    .replace(/[\s\-]+/g, '_')    // Replace spaces and hyphens with underscores
-    .replace(/[^\w_]/g, '')      // Remove special characters except underscores
-    .replace(/_+/g, '_')         // Replace multiple underscores with single underscore
-    .replace(/^_|_$/g, '');      // Remove leading and trailing underscores
+    .replace(/[\s\-]+/g, '_')
+    .replace(/[^\w_]/g, '')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '');
 }
 
 // Get project name from workspace
@@ -41,30 +41,166 @@ export async function createFeatureStructure(featuresPath: string, workspacePath
   const snakeCaseFeature = convertToSnakeCase(featureName);
   const pascalCaseFeature = convertToPascalCase(snakeCaseFeature);
   const camelCaseFeature = convertToCamelCase(snakeCaseFeature);
-  
+
   const projectName = getProjectName(workspacePath);
   const projectPascalCase = getProjectPascalCase(projectName);
-  
+
   const featurePath = path.join(featuresPath, snakeCaseFeature);
-  
-  // Create directory structure
+
   const directories = [
     path.join(featurePath, 'data', 'datasource'),
     path.join(featurePath, 'data', 'models', 'params'),
     path.join(featurePath, 'data', 'models', 'responses'),
     path.join(featurePath, 'data', 'repo'),
     path.join(featurePath, 'presentation', 'controller'),
+    path.join(featurePath, 'presentation', 'ui')
   ];
 
   directories.forEach(dir => {
     fs.mkdirSync(dir, { recursive: true });
   });
 
-  // Create files
   await createDataSourceFiles(featurePath, snakeCaseFeature, pascalCaseFeature, projectName);
   await createModelFiles(featurePath, snakeCaseFeature, pascalCaseFeature, projectName);
   await createRepoFiles(featurePath, snakeCaseFeature, pascalCaseFeature, projectName);
   await createControllerFiles(featurePath, snakeCaseFeature, pascalCaseFeature, projectName);
+}
+
+// Create UI template
+export async function createUITemplate(featuresPath: string, workspacePath: string, featureName: string, templateType: string) {
+  const snakeCaseFeature = convertToSnakeCase(featureName);
+  const pascalCaseFeature = convertToPascalCase(snakeCaseFeature);
+  const featurePath = path.join(featuresPath, snakeCaseFeature, 'presentation', 'ui');
+
+  fs.mkdirSync(featurePath, { recursive: true });
+
+  let uiContent = '';
+  if (templateType === 'Login Page') {
+    uiContent = `
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../controller/${snakeCaseFeature}_cubit.dart';
+
+class ${pascalCaseFeature}Page extends StatelessWidget {
+  const ${pascalCaseFeature}Page({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('${pascalCaseFeature}')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              decoration: const InputDecoration(labelText: 'Email'),
+            ),
+            TextField(
+              decoration: const InputDecoration(labelText: 'Password'),
+              obscureText: true,
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.read<${pascalCaseFeature}Cubit>().create${pascalCaseFeature}(${pascalCaseFeature}Params());
+              },
+              child: const Text('Login'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+`;
+  } else if (templateType === 'Dynamic List') {
+    uiContent = `
+import 'package:flutter/material.dart';
+import '../controller/${snakeCaseFeature}_cubit.dart';
+import '../controller/${snakeCaseFeature}_state.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+class ${pascalCaseFeature}Page extends StatelessWidget {
+  const ${pascalCaseFeature}Page({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('${pascalCaseFeature} List')),
+      body: BlocBuilder<${pascalCaseFeature}Cubit, ${pascalCaseFeature}State>(
+        builder: (context, state) {
+          if (state is ${pascalCaseFeature}Loading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is ${pascalCaseFeature}Success) {
+            return ListView.builder(
+              itemCount: 10,
+              itemBuilder: (context, index) => ListTile(
+                title: Text('Item \$index'),
+              ),
+            );
+          } else if (state is ${pascalCaseFeature}Error) {
+            return Center(child: Text(state.message));
+          }
+          return const Center(child: Text('Press a button to load data'));
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.read<${pascalCaseFeature}Cubit>().get${pascalCaseFeature}(${pascalCaseFeature}Params()),
+        child: const Icon(Icons.refresh),
+      ),
+    );
+  }
+}
+`;
+  } else if (templateType === 'Profile Page') {
+    uiContent = `
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../controller/${snakeCaseFeature}_cubit.dart';
+import '../controller/${snakeCaseFeature}_state.dart';
+
+class ${pascalCaseFeature}Page extends StatelessWidget {
+  const ${pascalCaseFeature}Page({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('${pascalCaseFeature}')),
+      body: BlocBuilder<${pascalCaseFeature}Cubit, ${pascalCaseFeature}State>(
+        builder: (context, state) {
+          if (state is ${pascalCaseFeature}Loading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is ${pascalCaseFeature}Success) {
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 50,
+                    child: Text(state.${snakeCaseFeature}Model.name[0]),
+                  ),
+                  const SizedBox(height: 16),
+                  Text('Name: \${state.${snakeCaseFeature}Model.name}'),
+                  Text('Description: \${state.${snakeCaseFeature}Model.description}'),
+                ],
+              ),
+            );
+          } else if (state is ${pascalCaseFeature}Error) {
+            return Center(child: Text(state.message));
+          }
+          return Center(child: Text('Load profile data'));
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.read<${pascalCaseFeature}Cubit>().get${pascalCaseFeature}(${pascalCaseFeature}Params()),
+        child: const Icon(Icons.refresh),
+      ),
+    );
+  }
+}
+`;
+  }
+
+  fs.writeFileSync(path.join(featurePath, `${snakeCaseFeature}_page.dart`), uiContent);
 }
 
 // Create datasource files
@@ -92,7 +228,7 @@ class ${pascalCaseFeature}RemoteDataSourceImpl implements ${pascalCaseFeature}Re
   Future<ApiResponse<${pascalCaseFeature}Model>> get${pascalCaseFeature}(${pascalCaseFeature}Params params) async {
     return dioClient.request<${pascalCaseFeature}Model>(
       method: RequestMethod.get,
-      EndPoints.${snakeCaseFeature}, // Add your endpoint here
+      EndPoints.${snakeCaseFeature},
       queryParams: params.toJson(),
       fromJson: (json) => ${pascalCaseFeature}Model.fromJson(json as Map<String, dynamic>),
     );
@@ -102,7 +238,7 @@ class ${pascalCaseFeature}RemoteDataSourceImpl implements ${pascalCaseFeature}Re
   Future<ApiResponse<void>> create${pascalCaseFeature}(${pascalCaseFeature}Params params) async {
     return dioClient.request<void>(
       method: RequestMethod.post,
-      EndPoints.${snakeCaseFeature}, // Add your endpoint here
+      EndPoints.${snakeCaseFeature},
       data: params.toJson(),
       fromJson: (json) => (),
     );
@@ -112,7 +248,7 @@ class ${pascalCaseFeature}RemoteDataSourceImpl implements ${pascalCaseFeature}Re
   Future<ApiResponse<void>> update${pascalCaseFeature}(${pascalCaseFeature}Params params) async {
     return dioClient.request<void>(
       method: RequestMethod.put,
-      EndPoints.${snakeCaseFeature}, // Add your endpoint here
+      EndPoints.${snakeCaseFeature},
       data: params.toJson(),
       fromJson: (json) => (),
     );
@@ -122,7 +258,7 @@ class ${pascalCaseFeature}RemoteDataSourceImpl implements ${pascalCaseFeature}Re
   Future<ApiResponse<void>> delete${pascalCaseFeature}(String id) async {
     return dioClient.request<void>(
       method: RequestMethod.delete,
-      '\${EndPoints.${snakeCaseFeature}}/\$id', // Add your endpoint here
+      '\${EndPoints.${snakeCaseFeature}}/\$id',
       fromJson: (json) => (),
     );
   }
@@ -137,7 +273,6 @@ class ${pascalCaseFeature}RemoteDataSourceImpl implements ${pascalCaseFeature}Re
 
 // Create model files
 async function createModelFiles(featurePath: string, snakeCaseFeature: string, pascalCaseFeature: string, projectName: string) {
-  // Create params file
   const paramsContent = `class ${pascalCaseFeature}Params {
   final String? id;
   final String? name;
@@ -179,7 +314,6 @@ async function createModelFiles(featurePath: string, snakeCaseFeature: string, p
 }
 `;
 
-  // Create response model file
   const responseModelContent = `class ${pascalCaseFeature}Model {
   final String id;
   final String name;
@@ -341,9 +475,8 @@ class ${pascalCaseFeature}RepoImpl implements ${pascalCaseFeature}Repo {
   );
 }
 
-// Create controller files  
+// Create controller files
 async function createControllerFiles(featurePath: string, snakeCaseFeature: string, pascalCaseFeature: string, projectName: string) {
-  // Create cubit file
   const cubitContent = `import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:${projectName}/core/api/response/response.dart';
@@ -366,7 +499,7 @@ class ${pascalCaseFeature}Cubit extends Cubit<${pascalCaseFeature}State> {
       emit(${pascalCaseFeature}Loading());
       final response = await _repo.get${pascalCaseFeature}(params);
       response.fold(
-        (${snakeCaseFeature}Model) => emit(${pascalCaseFeature}Success(${snakeCaseFeature}Model)), 
+        (${snakeCaseFeature}Model) => emit(${pascalCaseFeature}Success(${snakeCaseFeature}Model)),
         (error) => emit(${pascalCaseFeature}Error(error.message))
       );
     } on AppError catch (e) {
@@ -426,7 +559,6 @@ class ${pascalCaseFeature}Cubit extends Cubit<${pascalCaseFeature}State> {
 }
 `;
 
-  // Create state file
   const stateContent = `part of '${snakeCaseFeature}_cubit.dart';
 
 abstract class ${pascalCaseFeature}State extends Equatable {
