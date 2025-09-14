@@ -1,24 +1,39 @@
 {
      "name": "flutter-project-setup",
      "displayName": "Flutter Project Setup",
-     "description": "Automates Flutter project setup with predefined tasks and essential packages, plus feature creation",
-     "version": "1.1.0",
+     "description": "Advanced Flutter development toolkit with automated project setup, Clean Architecture templates, feature generation, and comprehensive development workflows. Includes interactive UI panels, Tree View integration, and cross-platform support.",
+     "version": "1.1.1",
      "publisher": "DevUnity",
      "engines": {
        "vscode": "^1.90.0"
      },
      "categories": [
-       "Other"
-     ],
+     "Snippets",
+       "Other",
+    "Extension Packs"
+  ],
      "keywords": [
-       "flutter",
-       "dart",
-       "project setup",
-       "automation",
-       "template",
-       "feature generator",
-       "clean architecture"
-     ],
+     "flutter",
+     "dart",
+     "project setup",
+     "automation",
+     "template",
+     "feature generator",
+     "clean architecture",
+       "webview",
+    "tree view",
+    "ui templates",
+    "bloc",
+    "state management",
+    "localization",
+    "unit testing",
+    "development workflow",
+    "code generator",
+    "productivity",
+    "cross-platform",
+    "mobile development",
+    "package management"
+  ],
      "repository": {
        "type": "git",
        "url": "https://github.com/Eldeengawy/flutter-project-setup.git"
